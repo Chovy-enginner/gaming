@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Travel Adventure</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { height: 100%; font-family: 'Helvetica Neue', Arial, sans-serif; }
+    #map { width: 100%; height: 100vh; }
+
+    /* 頂部標題列 */
+    .header-card {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 12px 24px;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+    .header-card h1 { font-size: 1.2rem; color: #333; }
+    .header-card p { font-size: 0.85rem; color: #666; margin-top: 2px; }
+
+    /* Popup 彈窗樣式 */
+    .popup-content { text-align: center; max-width: 220px; }
+    .popup-content img { width: 100%; border-radius: 8px; margin: 8px 0; }
+    .popup-content h3 { color: #d9534f; margin-bottom: 5px; }
+    .quiz-box { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #ccc; }
+    .quiz-box input {
+      width: 100%; padding: 6px; margin: 6px 0;
+      border: 1px solid #ccc; border-radius: 4px; text-align: center;
+    }
+    .quiz-box button {
+      background-color: #ff6b6b; color: white; border: none;
+      padding: 6px 12px; border-radius: 4px; cursor: pointer; width: 100%;
+    }
+    .quiz-box button:hover { background-color: #ee5253; }
+    .unlocked-tag { color: #2ecc71; font-weight: bold; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+  <div class="header-card">
+    <h1>✈️ 專屬出國冒險地圖</h1>
+    <p id="progress-text">點擊地圖上的藍色地標開始打卡解鎖行程！</p>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // 1. 初始化地圖（中心點設為預設景點中心，例如東京）
+    const map = L.map('map').setView([35.6762, 139.6503], 10);
+
+    // 使用 OpenStreetMap 免費地圖圖層
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // 2. 設定景點資料（可依需求替換經緯度、名稱、圖片與答案）
+    const spots = [
+      {
+        id: 1,
+        title: "第 1 站：成田國際機場",
+        coords: [35.7720, 140.3929],
+        img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400",
+        desc: "登機順利！準備開啟我們的精彩旅程～",
+        question: "我們的班機號碼是多少？（範例答案：123）",
+        answer: "123",
+        unlocked: false
+      },
+      {
+        id: 2,
+        title: "第 2 站：淺草寺雷門",
+        coords: [35.7148, 139.7967],
+        img: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=400",
+        desc: "來到東京必逛的景點，順便求張好籤！",
+        question: "雷門的大紅燈籠重達幾公斤？（提示：700）",
+        answer: "700",
+        unlocked: false
+      },
+      {
+        id: 3,
+        title: "第 3 站：東京鐵塔夜景",
+        coords: [35.6586, 139.7454],
+        img: "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=400",
+        desc: "浪漫的東京鐵塔夜景，準備了特別的晚餐！",
+        question: "我們今晚晚餐要吃什麼？（提示：燒肉）",
+        answer: "燒肉",
+        unlocked: false
+      }
+    ];
+
+    let markers = [];
+    let polyline = L.polyline([], { color: '#ff6b6b', weight: 4, opacity: 0.8, dashArray: '8, 8' }).addTo(map);
+
+    function updateMap() {
+      const unlockedCoords = spots.filter(s => s.unlocked).map(s => s.coords);
+      polyline.setLatLngs(unlockedCoords);
+
+      const total = spots.length;
+      const count = spots.filter(s => s.unlocked).length;
+      document.getElementById('progress-text').innerText = `已解鎖景點：${count} / ${total}`;
+
+      if (count === total) {
+        document.getElementById('progress-text').innerText = "🎉 恭喜！你已經成功解鎖所有出國行程！";
+      }
+    }
+
+    spots.forEach((spot, index) => {
+      const marker = L.marker(spot.coords).addTo(map);
+      markers.push(marker);
+
+      function renderPopupContent() {
+        if (spot.unlocked) {
+          return `
+            <div class="popup-content">
+              <h3>${spot.title}</h3>
+              <img src="${spot.img}" />
+              <p>${spot.desc}</p>
+              <div class="unlocked-tag">✅ 已解鎖景點</div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="popup-content">
+              <h3>${spot.title}</h3>
+              <p style="font-size: 0.85rem; color: #666; margin-bottom: 5px;">回答問題即可解鎖此行程：</p>
+              <p><strong>${spot.question}</strong></p>
+              <div class="quiz-box">
+                <input type="text" id="ans-${spot.id}" placeholder="輸入答案" />
+                <button onclick="checkAnswer(${spot.id})">解鎖打卡</button>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      marker.bindPopup(renderPopupContent);
+    });
+
+    window.checkAnswer = function(id) {
+      const spot = spots.find(s => s.id === id);
+      const inputVal = document.getElementById(`ans-${id}`).value.trim();
+
+      if (inputVal === spot.answer) {
+        spot.unlocked = true;
+        alert("🎉 答對了！成功解鎖該景點！");
+        const marker = markers[id - 1];
+        marker.getPopup().setContent(marker.getPopup().options.children ? marker.getPopup().options.children() : getUnlockedHTML(spot));
+        marker.closePopup();
+        updateMap();
+        marker.openPopup();
+      } else {
+        alert("❌ 答案不太對喔，再想一下～");
+      }
+    };
+
+    function getUnlockedHTML(spot) {
+      return `
+        <div class="popup-content">
+          <h3>${spot.title}</h3>
+          <img src="${spot.img}" />
+          <p>${spot.desc}</p>
+          <div class="unlocked-tag">✅ 已解鎖景點</div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
