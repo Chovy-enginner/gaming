@@ -1,3 +1,3 @@
 # gaming
 GAME 
-https://chovy-enginner.github.io/game/index.html
+https://chovy-enginner.github.io/gaming/index.html
