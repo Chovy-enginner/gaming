@@ -2,746 +2,398 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Our Surprise Travel Journey ✈️❤️</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Canvas Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            rose: {
-              50: '#fff1f2',
-              100: '#ffe4e6',
-              400: '#fb7185',
-              500: '#f43f5e',
-              600: '#e11d48',
-            },
-            gold: {
-              400: '#fbbf24',
-              500: '#f59e0b',
-            }
-          },
-          fontFamily: {
-            sans: ['"Noto Sans TC"', 'sans-serif'],
-            display: ['"Outfit"', 'sans-serif'],
-            handwriting: ['"Dancing Script"', 'cursive']
-          }
-        }
-      }
-    }
-  </script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>喵喵冒險！兩人專屬的甜密旅程 🐱❤️</title>
   <style>
-    body, html {
-      height: 100%;
-      margin: 0;
-      padding: 0;
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body {
+      background: linear-gradient(135deg, #ffd1dc, #ffe6e8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
       overflow: hidden;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
     }
-    #map {
+    .game-container {
+      position: relative;
+      width: 800px;
+      max-width: 95vw;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      overflow: hidden;
+      border: 4px solid #ffb6c1;
+    }
+    canvas {
+      display: block;
       width: 100%;
-      height: 100vh;
-      z-index: 1;
+      height: 400px;
+      background: #fcf8f2;
     }
-    
-    /* Custom Map Marker Styling */
-    .custom-marker-icon {
+    .ui-layer {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+    .score-board {
+      background: rgba(255, 255, 255, 0.85);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      color: #ff6b81;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: white;
-      box-shadow: 0 4px 15px rgba(225, 29, 72, 0.35);
-      border: 3px solid #f43f5e;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 100;
     }
-    .custom-marker-icon.locked {
-      background: #334155;
-      border-color: #94a3b8;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
     }
-    .custom-marker-icon.unlocked {
-      background: #f43f5e;
+    .card {
+      background: #fff;
+      padding: 25px;
+      border-radius: 24px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      transform: scale(0.8);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+    .modal-overlay.active .card {
+      transform: scale(1);
+    }
+    .photo-frame {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 4px solid #fff;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
+    }
+    .card h2 { color: #ff4757; margin-bottom: 8px; font-size: 1.4rem; }
+    .card p { color: #57606f; font-size: 0.95rem; line-height: 1.5; margin-bottom: 18px; }
+    .btn {
+      background: linear-gradient(45deg, #ff6b81, #ff4757);
       color: white;
-      border-color: #ffffff;
-      animation: pulse-ring 2s infinite;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
+      transition: transform 0.1s;
     }
-    .custom-marker-icon i {
-      font-size: 1.25rem;
+    .btn:active { transform: scale(0.95); }
+    .start-screen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 240, 243, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      text-align: center;
+      padding: 20px;
     }
-
-    @keyframes pulse-ring {
-      0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.6); }
-      70% { box-shadow: 0 0 0 14px rgba(244, 63, 94, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
-    }
-
-    /* Leaflet Popup Styling Override */
-    .leaflet-popup-content-wrapper {
-      padding: 0 !important;
-      border-radius: 1rem !important;
-      overflow: hidden !important;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-    }
-    .leaflet-popup-content {
-      margin: 0 !important;
-      line-height: 1.5 !important;
-    }
-    .leaflet-popup-tip {
-      background: white !important;
-    }
-
-    /* 3D Ticket Flip Effect */
-    .perspective-1000 {
-      perspective: 1000px;
-    }
-    .transform-style-3d {
-      transform-style: preserve-3d;
-    }
-    .backface-hidden {
-      backface-visibility: hidden;
-    }
-    .rotate-y-180 {
-      transform: rotateY(180deg);
-    }
-
-    /* Animated Polyline */
-    .animated-route {
-      stroke-dasharray: 10, 10;
-      animation: dash 1.5s linear infinite;
-    }
-    @keyframes dash {
-      to {
-        stroke-dashoffset: -20;
-      }
-    }
-
-    /* Custom Glassmorphism */
-    .glass-card {
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-    }
-
-    /* Scrollbar Styling for Modal */
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
+    .start-screen h1 { color: #ff4757; margin-bottom: 10px; font-size: 2rem; }
+    .start-screen p { color: #747d8c; margin-bottom: 25px; font-size: 1rem; }
   </style>
 </head>
-<body class="bg-slate-900 font-sans antialiased text-slate-800">
+<body>
 
-  <!-- Main Map Container -->
-  <div id="map"></div>
-
-  <!-- Floating Header Header Bar -->
-  <header class="fixed top-4 left-1/2 -translate-x-1/2 z-[1000] w-[92%] max-w-lg glass-card rounded-2xl p-3.5 shadow-2xl transition-all duration-300">
-    <div class="flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-rose-500/30">
-          <i class="fa-solid fa-plane-departure text-lg"></i>
-        </div>
-        <div>
-          <h1 class="font-bold text-slate-800 text-sm sm:text-base leading-tight flex items-center gap-1.5">
-            <span>專屬出國冒險之旅</span>
-            <span class="text-rose-500 text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-50 border border-rose-200">Japan Trip</span>
-          </h1>
-          <p id="progress-subtitle" class="text-xs text-slate-500 mt-0.5">點擊地圖上的紅圈地標開啟打卡任務！</p>
-        </div>
-      </div>
-      <button onclick="toggleSettingsModal()" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors" title="編輯驚喜內容">
-        <i class="fa-solid fa-gear text-sm"></i>
-      </button>
+  <div class="game-container">
+    <div class="ui-layer">
+      <div class="score-board">🐾 分數：<span id="score">0</span> / <span id="target">520</span></div>
+      <div class="score-board">❤️ 愛心：<span id="hearts">0</span></div>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="mt-3">
-      <div class="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-        <span>行程解鎖進度</span>
-        <span id="progress-percent" class="text-rose-600">0%</span>
-      </div>
-      <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
-        <div id="progress-bar-fill" class="bg-gradient-to-r from-rose-500 via-pink-500 to-amber-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- 開始畫面 -->
+    <div class="start-screen" id="startScreen">
+      <h1>🐱 喵喵冒險！兩人專屬旅程</h1>
+      <p>按【空白鍵】或【點擊螢幕】控制小貓咪跳躍！<br>收集愛心與合照相框，解鎖旅遊驚喜吧！</p>
+      <button class="btn" onclick="startGame()">開啟冒險 🐾</button>
+    </div>
+
+    <!-- 照片回憶彈窗 -->
+    <div class="modal-overlay" id="photoModal">
+      <div class="card">
+        <img id="modalImg" class="photo-frame" src="" alt="我們的合照">
+        <h2 id="modalTitle">解鎖甜密回憶！</h2>
+        <p id="modalDesc">這裡放你們的溫馨旅遊回憶說明...</p>
+        <button class="btn" onclick="resumeGame()">繼續冒險 ▶</button>
       </div>
     </div>
-  </header>
 
-  <!-- Floating Action Button for Boarding Pass (Appears after completion) -->
-  <button id="boarding-pass-btn" onclick="openBoardingPassModal()" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] bg-gradient-to-r from-amber-500 via-rose-500 to-pink-500 text-white font-bold px-6 py-3.5 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-3 border-2 border-white/80 animate-bounce">
-    <i class="fa-solid fa-ticket text-xl"></i>
-    <span>查看我的專屬登機證 ✈️</span>
-  </button>
-
-  <!-- Modal 1: Settings / Customization Modal -->
-  <div id="settings-modal" class="hidden fixed inset-0 z-[2000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/60 relative animate-in fade-in zoom-in-95 duration-200">
-      <button onclick="toggleSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center">
-        <i class="fa-solid fa-xmark text-lg"></i>
-      </button>
-
-      <div class="flex items-center gap-2 mb-4">
-        <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-500 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-sliders"></i>
-        </div>
-        <h2 class="text-lg font-bold text-slate-800">小驚喜設定面板</h2>
-      </div>
-
-      <p class="text-xs text-slate-500 mb-4">在這裡客製化登機證的名字與最終給女友的告白文字：</p>
-
-      <div class="space-y-3 text-sm">
-        <div>
-          <label class="block font-semibold text-slate-700 mb-1">乘客姓名 (女友稱呼)</label>
-          <input type="text" id="cfg-passenger" value="Dear Princess ❤️" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none text-slate-800">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">出發地</label>
-            <input type="text" id="cfg-from" value="Taipei (TPE)" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none text-slate-800">
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">目的地</label>
-            <input type="text" id="cfg-to" value="Tokyo (NRT)" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none text-slate-800">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">航班號碼</label>
-            <input type="text" id="cfg-flight" value="LOVE-520" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none text-slate-800">
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">出發日期</label>
-            <input type="text" id="cfg-date" value="2026.11.20" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none text-slate-800">
-          </div>
-        </div>
-        <div>
-          <label class="block font-semibold text-slate-700 mb-1">解鎖後的告白 / 驚喜悄悄話</label>
-          <textarea id="cfg-message" rows="4" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-500 outline-none text-slate-800 text-xs sm:text-sm">親愛的，準備好跟我一起飛出國玩了嗎？這是一趟專屬於我們的幸福之旅，機票與飯店我都準備好了，你只需要帶著好心情，我們一起去創造最棒的回憶吧！✈️🇯🇵❤️</textarea>
-        </div>
-      </div>
-
-      <div class="mt-5 flex gap-2">
-        <button onclick="saveSettings()" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl shadow-lg transition-colors text-sm">
-          儲存並更新
-        </button>
+    <!-- 通關旅遊券彈窗 -->
+    <div class="modal-overlay" id="victoryModal">
+      <div class="card">
+        <h2>🎉 恭喜通關！專屬旅遊兌換券</h2>
+        <img class="photo-frame" src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=500" alt="機票驚喜">
+        <p>憑此券可兌換「專屬雙人國外之旅」乙次！<br>準備好和我一起飛往下一個國度了嗎？✈️❤️</p>
+        <button class="btn" onclick="location.reload()">再玩一次 🔄</button>
       </div>
     </div>
   </div>
-
-  <!-- Modal 2: Digital Boarding Pass Modal (3D Ticket) -->
-  <div id="boarding-pass-modal" class="hidden fixed inset-0 z-[2000] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="w-full max-w-md relative">
-      <!-- Close Button -->
-      <button onclick="closeBoardingPassModal()" class="absolute -top-12 right-0 text-white/80 hover:text-white text-2xl w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <!-- 3D Card Container -->
-      <div id="ticket-card" class="bg-white rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative transition-transform duration-500">
-        <!-- Top Banner Header -->
-        <div class="bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 p-5 text-white relative overflow-hidden">
-          <div class="absolute right-0 top-0 opacity-10 text-8xl font-black pointer-events-none transform translate-x-4 -translate-y-2">
-            ✈️
-          </div>
-          <div class="flex justify-between items-start relative z-10">
-            <div>
-              <span class="text-xs font-semibold tracking-widest text-rose-200 uppercase">Boarding Pass</span>
-              <h2 class="text-xl font-extrabold tracking-tight">VIP 浪漫頭等艙登機證</h2>
-            </div>
-            <div class="bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold border border-white/30">
-              FIRST CLASS
-            </div>
-          </div>
-          
-          <!-- Route Overview -->
-          <div class="flex items-center justify-between mt-6 px-2">
-            <div class="text-left">
-              <span id="bp-from-code" class="text-3xl font-extrabold font-display">TPE</span>
-              <p id="bp-from-city" class="text-xs text-rose-100">Taipei</p>
-            </div>
-            <div class="flex-1 px-4 flex flex-col items-center">
-              <i class="fa-solid fa-plane text-rose-200 text-lg animate-pulse"></i>
-              <div class="w-full border-t-2 border-dashed border-rose-200/60 my-1"></div>
-              <span id="bp-flight-num" class="text-[10px] font-mono tracking-wider text-rose-100">FLIGHT LOVE-520</span>
-            </div>
-            <div class="text-right">
-              <span id="bp-to-code" class="text-3xl font-extrabold font-display">NRT</span>
-              <p id="bp-to-city" class="text-xs text-rose-100">Tokyo</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ticket Body Details -->
-        <div class="p-6 bg-slate-50 relative">
-          <!-- Ticket Notch Cutouts -->
-          <div class="absolute -left-3 -top-3 w-6 h-6 bg-slate-950 rounded-full"></div>
-          <div class="absolute -right-3 -top-3 w-6 h-6 bg-slate-950 rounded-full"></div>
-
-          <div class="grid grid-cols-2 gap-y-4 gap-x-2 text-sm border-b border-dashed border-slate-200 pb-5">
-            <div>
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase">PASSENGER / 乘客</span>
-              <span id="bp-passenger" class="font-bold text-slate-800 text-base block truncate">Dear Princess ❤️</span>
-            </div>
-            <div>
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase">DATE / 出發日期</span>
-              <span id="bp-date" class="font-bold text-slate-800 text-base block">2026.11.20</span>
-            </div>
-            <div>
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase">GATE / 登機門</span>
-              <span class="font-bold text-rose-600 text-base block">520</span>
-            </div>
-            <div>
-              <span class="text-[11px] font-semibold text-slate-400 block uppercase">SEAT / 座位</span>
-              <span class="font-bold text-rose-600 text-base block">01A (甜蜜特等座)</span>
-            </div>
-          </div>
-
-          <!-- Barcode Area -->
-          <div class="mt-4 text-center">
-            <div class="h-12 bg-slate-800 rounded-lg p-2 flex items-center justify-around opacity-80">
-              <div class="h-full w-1 bg-white"></div>
-              <div class="h-full w-2 bg-white"></div>
-              <div class="h-full w-0.5 bg-white"></div>
-              <div class="h-full w-3 bg-white"></div>
-              <div class="h-full w-1 bg-white"></div>
-              <div class="h-full w-2 bg-white"></div>
-              <div class="h-full w-0.5 bg-white"></div>
-              <div class="h-full w-1 bg-white"></div>
-              <div class="h-full w-3 bg-white"></div>
-              <div class="h-full w-2 bg-white"></div>
-            </div>
-            <span class="text-[10px] text-slate-400 font-mono tracking-widest mt-1 block">PASS-NO: 5201314999</span>
-          </div>
-
-          <!-- Reveal Letter Button -->
-          <button onclick="openLetterModal()" class="mt-5 w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold py-3.5 rounded-2xl shadow-xl shadow-rose-500/25 transition-all duration-300 flex items-center justify-center gap-2 group">
-            <i class="fa-solid fa-heart text-amber-300 group-hover:scale-125 transition-transform"></i>
-            <span>兌換旅遊兌換券 & 拆開信件</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 3: Secret Surprise Letter Modal -->
-  <div id="letter-modal" class="hidden fixed inset-0 z-[3000] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/60 relative max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-300">
-      
-      <!-- Close Button -->
-      <button onclick="closeLetterModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center">
-        <i class="fa-solid fa-xmark text-xl"></i>
-      </button>
-
-      <div class="text-center mb-4">
-        <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-2 text-rose-500 text-2xl shadow-inner">
-          <i class="fa-solid fa-envelope-open-text"></i>
-        </div>
-        <h3 class="text-xl font-bold text-slate-800">我們的專屬出國承諾 💌</h3>
-        <p class="text-xs text-rose-500 font-semibold mt-0.5">Special Gift Voucher Included</p>
-      </div>
-
-      <!-- Scrollable Letter Body -->
-      <div class="flex-1 overflow-y-auto custom-scrollbar bg-amber-50/60 rounded-2xl p-5 border border-amber-200/50 my-2">
-        <p id="letter-text" class="text-slate-700 text-sm leading-relaxed whitespace-pre-line font-sans">
-          <!-- Text dynamically loaded -->
-        </p>
-      </div>
-
-      <div class="mt-4 pt-2 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div class="flex items-center gap-2 text-xs text-slate-500">
-          <i class="fa-solid fa-sparkles text-amber-500"></i>
-          <span>憑此兌換券可享無條件旅行好心情</span>
-        </div>
-        <button onclick="closeLetterModal()" class="w-full sm:w-auto px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-sm transition-colors">
-          知道了！好期待 ❤️
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    // --- Audio Feedback Generator (Web Audio API) ---
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioCtx = null;
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 800;
+    canvas.height = 400;
 
-    function initAudio() {
-      if (!audioCtx) audioCtx = new AudioContext();
-    }
-
-    function playTone(freq, type = 'sine', duration = 0.15) {
-      try {
-        initAudio();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + duration);
-      } catch (e) {
-        console.log("Audio play blocked", e);
+    // 音效 (Web Audio API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      if (type === 'jump') {
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+      } else if (type === 'collect') {
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
       }
     }
 
-    function playUnlockSound() {
-      playTone(523.25, 'triangle', 0.1); // C5
-      setTimeout(() => playTone(659.25, 'triangle', 0.1), 100); // E5
-      setTimeout(() => playTone(783.99, 'triangle', 0.2), 200); // G5
-    }
-
-    function playFanfareSound() {
-      const notes = [523.25, 659.25, 783.99, 1046.50];
-      notes.forEach((freq, index) => {
-        setTimeout(() => playTone(freq, 'sine', 0.3), index * 150);
-      });
-    }
-
-    // --- Spot Data Configuration ---
-    let spots = [
+    // 甜密里程碑合照資料庫（可自訂）
+    const photoMilestones = [
       {
-        id: 1,
-        name: "第 1 站：成田國際機場 (NRT)",
-        coords: [35.7720, 140.3929],
-        img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&q=80",
-        desc: "抵達東京！我們的浪漫旅程正式揭開序幕～",
-        question: "問答關卡 1：準備出國玩的第一步，心情是幾分呢？（請輸入：100）",
-        answer: "100",
-        hint: "提示：當然是滿分 100 分啦！",
-        unlocked: false
+        score: 150,
+        title: "第一站：記得我們第一次約會",
+        desc: "那天陽光很好，就像你甜甜的笑容～❤️",
+        img: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500",
+        triggered: false
       },
       {
-        id: 2,
-        name: "第 2 站：淺草寺雷門",
-        coords: [35.7148, 139.7967],
-        img: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=600&q=80",
-        desc: "穿著浴衣漫步在復古街道，一起抽張好運籤詩！",
-        question: "問答關卡 2：雷門大燈籠底下刻的是什麼圖案呢？（請輸入：龍）",
-        answer: "龍",
-        hint: "提示：是十二生肖中會飛的祥獸（龍）",
-        unlocked: false
-      },
-      {
-        id: 3,
-        name: "第 3 站：東京鐵塔浪漫夜景",
-        coords: [35.6586, 139.7454],
-        img: "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=600&q=80",
-        desc: "夜幕低垂，閃耀紅光的鐵塔下，享用精緻的和牛燒肉晚餐。",
-        question: "問答關卡 3：今晚約會最浪漫的夜景代表是？（請輸入：東京鐵塔）",
-        answer: "東京鐵塔",
-        hint: "提示：紅白相間的經典地標「東京鐵塔」",
-        unlocked: false
-      },
-      {
-        id: 4,
-        name: "第 4 站：東京迪士尼樂園",
-        coords: [35.6329, 139.8804],
-        img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&q=80",
-        desc: "來到充滿童話與夢想的世界，戴上專屬髮箍看煙火！",
-        question: "問答關卡 4：迪士尼裡最代表夢想的城堡是誰的城堡？（請輸入：灰姑娘）",
-        answer: "灰姑娘",
-        hint: "提示：掉落玻璃鞋的那位公主（灰姑娘）",
-        unlocked: false
-      },
-      {
-        id: 5,
-        name: "第 5 站：富士山河口湖溫泉",
-        coords: [35.5033, 138.7638],
-        img: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&q=80",
-        desc: "泡著溫泉欣賞富士山絕景，為這趟驚喜之旅畫下最完美的句點。",
-        question: "最後關卡：準備好跟我一起飛出國創造回憶了嗎？（請輸入：好）",
-        answer: "好",
-        hint: "提示：輸入「好」即可解鎖最終驚喜機票！",
-        unlocked: false
+        score: 350,
+        title: "第二站：一起看過的浪漫海景",
+        desc: "無論去哪裡，只要身邊有你，就是最好的風景！🌊",
+        img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500",
+        triggered: false
       }
     ];
 
-    // Global App State
-    let map;
-    let markers = [];
-    let polyline;
+    let gameState = 'START'; // START, PLAYING, PAUSED, GAME_OVER
+    let score = 0;
+    let heartsCount = 0;
+    const targetScore = 520;
 
-    // --- Map Initialization ---
-    window.onload = function() {
-      // Center around Tokyo region
-      map = L.map('map', {
-        zoomControl: false
-      }).setView([35.6762, 139.7500], 9);
-
-      // Add modern clean Map Tiles (CartoDB Positron for clean visual aesthetics)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap &copy; CARTO'
-      }).addTo(map);
-
-      // Re-position zoom control to bottom right for mobile ergonomics
-      L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-      // Polyline route layer
-      polyline = L.polyline([], {
-        color: '#f43f5e',
-        weight: 4,
-        opacity: 0.85,
-        className: 'animated-route'
-      }).addTo(map);
-
-      // Render Markers
-      renderMapMarkers();
-      updateProgress();
+    // 小貓咪玩家物件
+    const cat = {
+      x: 80, y: 280, width: 45, height: 40,
+      vy: 0, gravity: 0.7, jumpPower: -12,
+      isGrounded: true, frame: 0
     };
 
-    // Render Markers on Map
-    function renderMapMarkers() {
-      // Clear existing
-      markers.forEach(m => map.removeLayer(m));
-      markers = [];
+    let obstacles = [];
+    let collectibles = [];
+    let particles = [];
+    let gameSpeed = 5;
 
-      spots.forEach((spot, index) => {
-        // Create custom DivIcon for Leaflet
-        const isUnlocked = spot.unlocked;
-        const iconHtml = `
-          <div class="custom-marker-icon ${isUnlocked ? 'unlocked' : 'locked'}">
-            <i class="fa-solid ${isUnlocked ? 'fa-check' : 'fa-location-dot'}"></i>
-          </div>
-        `;
+    function jump() {
+      if (gameState === 'PLAYING' && cat.isGrounded) {
+        cat.vy = cat.jumpPower;
+        cat.isGrounded = false;
+        playSound('jump');
+        createParticles(cat.x + cat.width/2, cat.y + cat.height, '#ffb6c1', 6);
+      }
+    }
 
-        const customIcon = L.divIcon({
-          html: iconHtml,
-          className: '',
-          iconSize: [44, 44],
-          iconAnchor: [22, 22],
-          popupAnchor: [0, -22]
+    window.addEventListener('keydown', e => { if (e.code === 'Space') jump(); });
+    window.addEventListener('touchstart', e => { jump(); });
+    canvas.addEventListener('click', () => { jump(); });
+
+    function startGame() {
+      document.getElementById('startScreen').style.display = 'none';
+      gameState = 'PLAYING';
+      gameLoop();
+    }
+
+    function createParticles(x, y, color, count = 5) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x, y,
+          vx: (Math.random() - 0.5) * 4,
+          vy: (Math.random() - 0.5) * 4,
+          size: Math.random() * 4 + 2,
+          color, life: 20
         });
+      }
+    }
 
-        const marker = L.marker(spot.coords, { icon: customIcon }).addTo(map);
-        
-        // Bind Popup
-        marker.bindPopup(() => getPopupHTML(spot), {
-          maxWidth: 280,
-          minWidth: 260
-        });
+    function spawnElements() {
+      if (Math.random() < 0.015) {
+        obstacles.push({ x: canvas.width, y: 290, width: 30, height: 35, type: 'alarm' });
+      }
+      if (Math.random() < 0.02) {
+        collectibles.push({ x: canvas.width, y: 180 + Math.random() * 80, width: 25, height: 25, type: 'heart' });
+      }
+    }
 
-        markers.push(marker);
+    function checkCollisions() {
+      // 障礙物碰撞
+      obstacles.forEach(obs => {
+        if (cat.x < obs.x + obs.width && cat.x + cat.width > obs.x &&
+            cat.y < obs.y + obs.height && cat.y + cat.height > obs.y) {
+          cat.vy = -6; // 輕微彈開
+        }
+      });
+
+      // 收集愛心
+      collectibles.forEach((item, index) => {
+        if (cat.x < item.x + item.width && cat.x + cat.width > item.x &&
+            cat.y < item.y + item.height && cat.y + cat.height > item.y) {
+          collectibles.splice(index, 1);
+          heartsCount++;
+          score += 20;
+          playSound('collect');
+          createParticles(item.x, item.y, '#ff4757', 8);
+        }
       });
     }
 
-    // Generate Popup Content HTML
-    function getPopupHTML(spot) {
-      if (spot.unlocked) {
-        return `
-          <div class="bg-white rounded-2xl overflow-hidden shadow-sm">
-            <img src="${spot.img}" class="w-full h-36 object-cover" alt="${spot.name}">
-            <div class="p-4">
-              <span class="text-[10px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">已成功解鎖</span>
-              <h3 class="font-bold text-slate-800 text-base mt-1">${spot.name}</h3>
-              <p class="text-xs text-slate-600 mt-1 leading-relaxed">${spot.desc}</p>
-            </div>
-          </div>
-        `;
-      } else {
-        return `
-          <div class="bg-white rounded-2xl p-4 text-slate-800">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="w-6 h-6 rounded-full bg-rose-100 text-rose-500 text-xs font-bold flex items-center justify-center">
-                ${spot.id}
-              </span>
-              <h3 class="font-bold text-slate-800 text-sm truncate">${spot.name}</h3>
-            </div>
-            <p class="text-xs text-slate-600 mb-3 bg-slate-50 p-2.5 rounded-xl border border-slate-100 leading-normal">
-              ${spot.question}
-            </p>
-            <div class="space-y-2">
-              <input type="text" id="quiz-input-${spot.id}" placeholder="請輸入答案" class="w-full text-xs px-3 py-2 border border-slate-200 rounded-xl outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500">
-              <button onclick="handleAnswer(${spot.id})" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs py-2.5 rounded-xl transition-colors shadow-md shadow-rose-500/20">
-                答題打卡
-              </button>
-            </div>
-            <p class="text-[10px] text-slate-400 mt-2 text-center">${spot.hint}</p>
-          </div>
-        `;
-      }
-    }
-
-    // Handle Quiz Answer Logic
-    window.handleAnswer = function(id) {
-      const spot = spots.find(s => s.id === id);
-      const inputEl = document.getElementById(`quiz-input-${id}`);
-      if (!inputEl) return;
-
-      const userAns = inputEl.value.trim().toLowerCase();
-      const targetAns = spot.answer.toLowerCase();
-
-      if (userAns === targetAns || userAns === "好") {
-        spot.unlocked = true;
-        playUnlockSound();
-        
-        // Update popup
-        const marker = markers[id - 1];
-        marker.closePopup();
-
-        // Refresh markers & route
-        renderMapMarkers();
-        updateProgress();
-
-        // Open newly updated popup
-        setTimeout(() => {
-          markers[id - 1].openPopup();
-        }, 300);
-
-        // Check if all spots completed
-        checkAllUnlocked();
-
-      } else {
-        playTone(200, 'sawtooth', 0.2); // Error tone
-        inputEl.classList.add('border-red-500', 'animate-shake');
-        setTimeout(() => inputEl.classList.remove('border-red-500', 'animate-shake'), 500);
-      }
-    };
-
-    // Update Progress Bar & Route Lines
-    function updateProgress() {
-      const unlockedSpots = spots.filter(s => s.unlocked);
-      const percentage = Math.round((unlockedSpots.length / spots.length) * 100);
-
-      document.getElementById('progress-percent').innerText = `${percentage}%`;
-      document.getElementById('progress-bar-fill').style.width = `${percentage}%`;
-
-      // Update connected route polyline
-      const coords = unlockedSpots.map(s => s.coords);
-      polyline.setLatLngs(coords);
-
-      if (unlockedSpots.length > 0) {
-        // Smooth pan map to latest unlocked spot
-        const latest = unlockedSpots[unlockedSpots.length - 1];
-        map.panTo(latest.coords, { animate: true, duration: 0.8 });
-      }
-    }
-
-    // Check if game completely finished
-    function checkAllUnlocked() {
-      const allDone = spots.every(s => s.unlocked);
-      if (allDone) {
-        playFanfareSound();
-        
-        // Show trigger button
-        document.getElementById('boarding-pass-btn').classList.remove('hidden');
-
-        // Trigger Confetti Party
-        triggerConfetti();
-
-        // Automatically open Boarding Pass Modal after 1 second
-        setTimeout(() => {
-          openBoardingPassModal();
-        }, 1200);
-      }
-    }
-
-    // Fire Confetti Particle Effect
-    function triggerConfetti() {
-      const duration = 3 * 1000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 3000 };
-
-      function randomInRange(min, max) {
-        return Math.random() * (max - min) + min;
-      }
-
-      const interval = setInterval(function() {
-        const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
+    function checkMilestones() {
+      photoMilestones.forEach(m => {
+        if (!m.triggered && score >= m.score) {
+          m.triggered = true;
+          gameState = 'PAUSED';
+          document.getElementById('modalImg').src = m.img;
+          document.getElementById('modalTitle').innerText = m.title;
+          document.getElementById('modalDesc').innerText = m.desc;
+          document.getElementById('photoModal').classList.add('active');
         }
+      });
 
-        const particleCount = 50 * (timeLeft / duration);
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-      }, 250);
+      if (score >= targetScore) {
+        gameState = 'PAUSED';
+        document.getElementById('victoryModal').classList.add('active');
+      }
     }
 
-    // --- Modal Control Functions ---
-    function openBoardingPassModal() {
-      updateBoardingPassUI();
-      document.getElementById('boarding-pass-modal').classList.remove('hidden');
+    function resumeGame() {
+      document.getElementById('photoModal').classList.remove('active');
+      gameState = 'PLAYING';
+      gameLoop();
     }
 
-    function closeBoardingPassModal() {
-      document.getElementById('boarding-pass-modal').classList.add('hidden');
+    function update() {
+      if (gameState !== 'PLAYING') return;
+
+      score++;
+      document.getElementById('score').innerText = score;
+      document.getElementById('hearts').innerText = heartsCount;
+
+      // 貓咪物理
+      cat.vy += cat.gravity;
+      cat.y += cat.vy;
+      if (cat.y >= 280) {
+        cat.y = 280;
+        cat.vy = 0;
+        cat.isGrounded = true;
+      }
+
+      // 移動元素
+      obstacles.forEach(obs => obs.x -= gameSpeed);
+      collectibles.forEach(item => item.x -= gameSpeed);
+      particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; });
+
+      obstacles = obstacles.filter(obs => obs.x > -50);
+      collectibles = collectibles.filter(item => item.x > -50);
+      particles = particles.filter(p => p.life > 0);
+
+      spawnElements();
+      checkCollisions();
+      checkMilestones();
     }
 
-    function openLetterModal() {
-      closeBoardingPassModal();
-      const message = document.getElementById('cfg-message').value;
-      document.getElementById('letter-text').innerText = message;
-      document.getElementById('letter-modal').classList.remove('hidden');
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 繪製草地地板
+      ctx.fillStyle = '#a8e6cf';
+      ctx.fillRect(0, 325, canvas.width, 75);
+      ctx.fillStyle = '#56ab2f';
+      ctx.fillRect(0, 320, canvas.width, 8);
+
+      // 繪製像素小貓咪
+      ctx.fillStyle = '#ff9f43';
+      ctx.fillRect(cat.x, cat.y, cat.width, cat.height); // 貓咪身體
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(cat.x + 8, cat.y + 8, 10, 10); // 左眼
+      ctx.fillRect(cat.x + 26, cat.y + 8, 10, 10); // 右眼
+      ctx.fillStyle = '#000';
+      ctx.fillRect(cat.x + 12, cat.y + 12, 4, 4);
+      ctx.fillRect(cat.x + 30, cat.y + 12, 4, 4);
+
+      // 貓耳朵
+      ctx.fillStyle = '#ee5253';
+      ctx.beginPath();
+      ctx.moveTo(cat.x + 5, cat.y); ctx.lineTo(cat.x + 15, cat.y - 10); ctx.lineTo(cat.x + 20, cat.y);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cat.x + 25, cat.y); ctx.lineTo(cat.x + 30, cat.y - 10); ctx.lineTo(cat.x + 40, cat.y);
+      ctx.fill();
+
+      // 繪製障礙物
+      ctx.fillStyle = '#57606f';
+      obstacles.forEach(obs => {
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+      });
+
+      // 繪製愛心
+      ctx.fillStyle = '#ff4757';
+      collectibles.forEach(item => {
+        ctx.beginPath();
+        ctx.arc(item.x + 10, item.y + 10, 8, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 繪製粒子
+      particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      });
     }
 
-    function closeLetterModal() {
-      document.getElementById('letter-modal').classList.add('hidden');
-    }
-
-    function toggleSettingsModal() {
-      const modal = document.getElementById('settings-modal');
-      modal.classList.toggle('hidden');
-    }
-
-    // Update Boarding Pass Data from Settings
-    function updateBoardingPassUI() {
-      const passenger = document.getElementById('cfg-passenger').value;
-      const from = document.getElementById('cfg-from').value;
-      const to = document.getElementById('cfg-to').value;
-      const flight = document.getElementById('cfg-flight').value;
-      const date = document.getElementById('cfg-date').value;
-
-      document.getElementById('bp-passenger').innerText = passenger;
-      document.getElementById('bp-from-city').innerText = from;
-      document.getElementById('bp-to-city').innerText = to;
-      document.getElementById('bp-flight-num').innerText = `FLIGHT ${flight}`;
-      document.getElementById('bp-date').innerText = date;
-
-      // Extract 3 letter airport codes if available
-      const fromMatch = from.match(/\(([^)]+)\)/);
-      const toMatch = to.match(/\(([^)]+)\)/);
-      if (fromMatch) document.getElementById('bp-from-code').innerText = fromMatch[1];
-      if (toMatch) document.getElementById('bp-to-code').innerText = toMatch[1];
-    }
-
-    function saveSettings() {
-      updateBoardingPassUI();
-      toggleSettingsModal();
-      alert("✨ 驚喜設定已更新成功！");
+    function gameLoop() {
+      if (gameState === 'PLAYING') {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+      }
     }
   </script>
 </body>
