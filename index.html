@@ -80,6 +80,32 @@
     .modal-overlay.active .card {
       transform: scale(1);
     }
+
+    /* 迪士尼煙火特製卡片樣式 */
+    .disney-card {
+      background: linear-gradient(180deg, #1a0b2e 0%, #31145a 100%);
+      color: #fff;
+      border: 2px solid #ffd700;
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+    }
+    .disney-card h2 {
+      color: #ffd700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+      font-size: 1.6rem;
+    }
+    .disney-card p {
+      color: #e0d5f5;
+    }
+    .disney-bg-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 3px solid #ffd700;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      margin-bottom: 15px;
+    }
+
     .photo-frame {
       width: 100%;
       height: 220px;
@@ -102,6 +128,11 @@
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
       transition: transform 0.1s;
+    }
+    .disney-btn {
+      background: linear-gradient(45deg, #ffd700, #ffaa00);
+      color: #1a0b2e;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
     }
     .btn:active { transform: scale(0.95); }
     .start-screen {
@@ -131,8 +162,8 @@
 
     <!-- 開始畫面 -->
     <div class="start-screen" id="startScreen">
-      <h1>🐱 賓士喵冒險！兩人專屬旅程</h1>
-      <p>按【空白鍵】或【點擊螢幕】控制小賓士貓跳躍！<br>吃到 15 個點點即可獲勝，吃到金色大點點解鎖精選合照！</p>
+      <h1>🐱 喵喵冒險！兩人專屬旅程</h1>
+      <p>按【空白鍵】或【點擊螢幕】控制貓貓跳躍！<br>吃到 15 個點點即可獲勝，吃到金色大點點解鎖精選合照！</p>
       <button class="btn" onclick="startGame()">開啟冒險 🐾</button>
     </div>
 
@@ -146,13 +177,13 @@
       </div>
     </div>
 
-    <!-- 通關旅遊券彈窗 -->
+    <!-- 迪士尼 出發卷 通關彈窗 -->
     <div class="modal-overlay" id="victoryModal">
-      <div class="card">
-        <h2>🎉 恭喜通關！專屬旅遊兌換券</h2>
-        <img class="photo-frame" src="1.jpg" alt="機票驚喜">
-        <p>憑此券可兌換「專屬雙人出國之旅」乙次！<br>準備好和我一起出發了嗎？✈️❤️</p>
-        <button class="btn" onclick="location.reload()">再玩一次 🔄</button>
+      <div class="card disney-card">
+        <h2>✨ 迪士尼 出發卷 ✨</h2>
+        <img class="disney-bg-img" src="https://images.unsplash.com/photo-1513151233558-d860c5398176?w=600" alt="迪士尼煙火">
+        <p>🎉 恭喜通關！<br>憑此卷可兌換「專屬迪士尼夢幻之旅」乙次！<br>準備好跟我一起去看煙火了嗎？🏰🎆✨</p>
+        <button class="btn disney-btn" onclick="location.reload()">再玩一次 🔄</button>
       </div>
     </div>
   </div>
@@ -193,14 +224,13 @@
       }
     }
 
-    // 里程碑照片陣列（讀取同目錄下的 1.jpg, 2.jpg, 3.jpg, 4.jpg）
+    // 照片庫（記錄獨立解鎖狀態）
     const photos = [
-      { img: '1.jpg', title: '被媽媽發現了!', desc: '等媽媽回來玩抓迷藏' },
-      { img: '2.jpg', title: '第二站：精彩旅程', desc: '無論去哪裡都有你相伴～🌊' },
-      { img: '3.jpg', title: '第三站：溫馨回憶', desc: '把每個瞬間都珍藏起來！✨' },
-      { img: '4.jpg', title: '第四站：期待出發', desc: '準備好迎接下一次的出國旅行了嗎？✈️' }
+      { img: '1.jpg', title: '被媽媽發現了!', desc: '等媽媽回來玩抓迷藏', isUnlocked: false },
+      { img: '2.jpg', title: '第二站：精彩旅程', desc: '無論去哪裡都有你相伴～🌊', isUnlocked: false },
+      { img: '3.jpg', title: '第三站：溫馨回憶', desc: '把每個瞬間都珍藏起來！✨', isUnlocked: false },
+      { img: '4.jpg', title: '第四站：期待出發', desc: '準備好迎接下一次的出國旅行了嗎？✈️', isUnlocked: false }
     ];
-    let photoIndex = 0;
 
     let gameState = 'START';
     let score = 0;
@@ -258,7 +288,7 @@
       spawnTimer++;
       if (spawnTimer > 70) {
         spawnTimer = 0;
-        const isBig = Math.random() < 0.28; // 28% 機率出現大金黃點
+        const isBig = Math.random() < 0.32;
         collectibles.push({
           x: canvas.width,
           y: isBig ? 210 : (220 + Math.random() * 60),
@@ -269,13 +299,15 @@
     }
 
     function triggerPhotoModal() {
-      const p = photos[photoIndex % photos.length];
-      photoIndex++;
+      const nextPhoto = photos.find(p => !p.isUnlocked);
+      if (!nextPhoto) return;
+
+      nextPhoto.isUnlocked = true;
 
       gameState = 'PAUSED';
-      document.getElementById('modalImg').src = p.img;
-      document.getElementById('modalTitle').innerText = p.title;
-      document.getElementById('modalDesc').innerText = p.desc;
+      document.getElementById('modalImg').src = nextPhoto.img;
+      document.getElementById('modalTitle').innerText = nextPhoto.title;
+      document.getElementById('modalDesc').innerText = nextPhoto.desc;
       document.getElementById('photoModal').classList.add('active');
     }
 
@@ -343,12 +375,10 @@
       ctx.fillStyle = '#56ab2f';
       ctx.fillRect(0, 320, canvas.width, 5);
 
-      // --- 繪製黑色賓士貓 ---
-      // 1. 黑色身體
+      // 繪製黑色賓士貓
       ctx.fillStyle = '#222222';
       ctx.fillRect(cat.x, cat.y, cat.width, cat.height);
 
-      // 2. 胸口/肚子白毛 (V領白毛)
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.moveTo(cat.x + 12, cat.y + 18);
@@ -357,13 +387,11 @@
       ctx.closePath();
       ctx.fill();
 
-      // 3. 四隻白襪子腳
       ctx.fillRect(cat.x + 2, cat.y + 34, 8, 6);
       ctx.fillRect(cat.x + 12, cat.y + 34, 8, 6);
       ctx.fillRect(cat.x + 25, cat.y + 34, 8, 6);
       ctx.fillRect(cat.x + 35, cat.y + 34, 8, 6);
 
-      // 4. 臉部白 mask (賓士八字白毛)
       ctx.beginPath();
       ctx.moveTo(cat.x + 22.5, cat.y + 8);
       ctx.lineTo(cat.x + 12, cat.y + 22);
@@ -371,7 +399,6 @@
       ctx.closePath();
       ctx.fill();
 
-      // 5. 貓眼 (綠/金眼)
       ctx.fillStyle = '#2ecc71';
       ctx.fillRect(cat.x + 8, cat.y + 8, 8, 8);
       ctx.fillRect(cat.x + 29, cat.y + 8, 8, 8);
@@ -379,7 +406,6 @@
       ctx.fillRect(cat.x + 11, cat.y + 10, 3, 5);
       ctx.fillRect(cat.x + 32, cat.y + 10, 3, 5);
 
-      // 6. 黑色耳朵
       ctx.fillStyle = '#222222';
       ctx.beginPath();
       ctx.moveTo(cat.x + 3, cat.y); ctx.lineTo(cat.x + 13, cat.y - 10); ctx.lineTo(cat.x + 18, cat.y);
@@ -388,13 +414,12 @@
       ctx.moveTo(cat.x + 27, cat.y); ctx.lineTo(cat.x + 32, cat.y - 10); ctx.lineTo(cat.x + 42, cat.y);
       ctx.fill();
       
-      // 耳內粉紅
       ctx.fillStyle = '#ff8a80';
       ctx.beginPath();
       ctx.moveTo(cat.x + 6, cat.y); ctx.lineTo(cat.x + 13, cat.y - 6); ctx.lineTo(cat.x + 16, cat.y);
       ctx.fill();
 
-      // --- 繪製點點 (紅點 vs 金黃大點) ---
+      // 繪製點點
       collectibles.forEach(item => {
         ctx.beginPath();
         ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
