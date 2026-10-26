@@ -80,6 +80,7 @@
       pointer-events: none;
       transition: opacity 0.3s ease;
       z-index: 100;
+      padding: 15px;
     }
     .modal-overlay.active {
       opacity: 1;
@@ -87,11 +88,13 @@
     }
     .card {
       background: #fff;
-      padding: 30px;
+      padding: 25px 30px;
       border-radius: 28px;
       text-align: center;
       max-width: 520px;
       width: 92%;
+      max-height: 90vh;
+      overflow-y: auto;
       transform: scale(0.8);
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       box-shadow: 0 20px 45px rgba(0,0,0,0.25);
@@ -103,11 +106,11 @@
     /* 大相片展示框 (防止 iPhone 照片裁切) */
     .photo-container {
       width: 100%;
-      height: 280px;
+      height: 250px;
       background-color: #111111;
       border-radius: 16px;
       overflow: hidden;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -120,28 +123,28 @@
       object-fit: contain;
     }
 
-    /* 加大版迪士尼卡片樣式 */
+    /* 加大修正版迪士尼卡片樣式 */
     .disney-card {
       background: linear-gradient(180deg, #0d0722 0%, #1f0a38 100%);
       color: #fff;
       border: 3px solid #ffd700;
       box-shadow: 0 0 45px rgba(255, 215, 0, 0.85);
-      max-width: 620px; /* 從 520px 加大到 620px */
-      padding: 35px;
+      max-width: 600px;
+      padding: 24px 30px;
     }
-    .disney-card h2 { color: #ffd700; font-size: 2.3rem; margin-bottom: 16px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
-    .disney-card p { color: #e0d5f5; line-height: 1.7; font-size: 1.25rem; }
+    .disney-card h2 { color: #ffd700; font-size: 2.1rem; margin-bottom: 12px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
+    .disney-card p { color: #e0d5f5; line-height: 1.6; font-size: 1.15rem; }
     .disney-bg-img {
       max-width: 100%;
-      max-height: 300px; /* 大照片展示 */
+      max-height: 220px;
       object-fit: contain;
       border-radius: 16px;
       border: 3px solid #ffd700;
       box-shadow: 0 8px 25px rgba(0,0,0,0.6);
     }
 
-    .card h2 { color: #ff4757; margin-bottom: 10px; font-size: 1.6rem; }
-    .card p { color: #57606f; font-size: 1.1rem; line-height: 1.6; margin-bottom: 22px; }
+    .card h2 { color: #ff4757; margin-bottom: 8px; font-size: 1.6rem; }
+    .card p { color: #57606f; font-size: 1.05rem; line-height: 1.5; margin-bottom: 18px; }
     .btn {
       background: linear-gradient(45deg, #ff6b81, #ff4757);
       color: white;
@@ -156,9 +159,10 @@
     .disney-btn {
       background: linear-gradient(45deg, #ffd700, #ffaa00);
       color: #1a0b2e;
-      font-size: 1.3rem;
-      padding: 14px 40px;
+      font-size: 1.2rem;
+      padding: 12px 36px;
       box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6);
+      display: inline-block;
     }
     .start-screen {
       position: absolute;
@@ -188,7 +192,7 @@
       <div class="score-board">🔴 點點進度：<span id="score">0</span> / <span id="target">20</span></div>
     </div>
 
-    <!-- 開始畫面（已取消空白鍵提示） -->
+    <!-- 開始畫面 -->
     <div class="start-screen" id="startScreen">
       <h1>🐱 喵喵冒險！兩人專屬旅程</h1>
       <p>點擊【開啟冒險】開始幫助貓貓跳躍！<br>吃到 20 個點點即可獲勝，吃到金色大點點解鎖 5 張精選合照！</p>
@@ -207,15 +211,15 @@
       </div>
     </div>
 
-    <!-- 加大版 迪士尼 出發卷 通關彈窗 -->
+    <!-- 迪士尼 出發卷 通關彈窗 -->
     <div class="modal-overlay" id="victoryModal">
       <div class="card disney-card">
         <h2>✨ 迪士尼 出發卷 ✨</h2>
-        <div class="photo-container" style="height: 290px; background: transparent; border: none; box-shadow: none;">
+        <div class="photo-container" style="height: 220px; background: transparent; border: none; box-shadow: none; margin-bottom: 10px;">
           <img class="disney-bg-img" src="6.jpeg" alt="迪士尼城堡">
         </div>
-        <p style="margin-top: 10px;">🎉 恭喜通關！<br>憑此券可兌換「專屬迪士尼夢幻之旅」乙次！<br>準備好跟我一起去看煙火了嗎？🏰🎆✨</p>
-        <button class="btn disney-btn" onclick="location.reload()" style="margin-top: 20px;">再玩一次 🔄</button>
+        <p style="margin-bottom: 15px;">🎉 恭喜通關！<br>憑此畫面可兌換「迪士尼 出發啦」一次<br>準備好跟我一起去看煙火了嗎？🏰🎆✨</p>
+        <button class="btn disney-btn" onclick="location.reload()">再玩一次 🔄</button>
       </div>
     </div>
   </div>
@@ -318,8 +322,6 @@
     let gameState = 'START';
     let score = 0;
     const targetScore = 20;
-    
-    // 遊戲移動速度提升（由 3.2 提升至 4.8）
     let gameSpeed = 4.8;
 
     const cat = {
