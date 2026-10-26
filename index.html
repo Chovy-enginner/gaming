@@ -119,23 +119,27 @@
       max-height: 100%;
       object-fit: contain;
     }
+
+    /* 加大版迪士尼卡片樣式 */
     .disney-card {
       background: linear-gradient(180deg, #0d0722 0%, #1f0a38 100%);
       color: #fff;
       border: 3px solid #ffd700;
       box-shadow: 0 0 45px rgba(255, 215, 0, 0.85);
+      max-width: 620px; /* 從 520px 加大到 620px */
+      padding: 35px;
     }
-    .disney-card h2 { color: #ffd700; font-size: 2.1rem; margin-bottom: 14px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
-    .disney-card p { color: #e0d5f5; line-height: 1.7; font-size: 1.15rem; }
+    .disney-card h2 { color: #ffd700; font-size: 2.3rem; margin-bottom: 16px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
+    .disney-card p { color: #e0d5f5; line-height: 1.7; font-size: 1.25rem; }
     .disney-bg-img {
       max-width: 100%;
-      max-height: 250px;
+      max-height: 300px; /* 大照片展示 */
       object-fit: contain;
       border-radius: 16px;
       border: 3px solid #ffd700;
-      margin-bottom: 18px;
       box-shadow: 0 8px 25px rgba(0,0,0,0.6);
     }
+
     .card h2 { color: #ff4757; margin-bottom: 10px; font-size: 1.6rem; }
     .card p { color: #57606f; font-size: 1.1rem; line-height: 1.6; margin-bottom: 22px; }
     .btn {
@@ -152,8 +156,8 @@
     .disney-btn {
       background: linear-gradient(45deg, #ffd700, #ffaa00);
       color: #1a0b2e;
-      font-size: 1.2rem;
-      padding: 14px 36px;
+      font-size: 1.3rem;
+      padding: 14px 40px;
       box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6);
     }
     .start-screen {
@@ -184,10 +188,10 @@
       <div class="score-board">🔴 點點進度：<span id="score">0</span> / <span id="target">20</span></div>
     </div>
 
-    <!-- 開始畫面 -->
+    <!-- 開始畫面（已取消空白鍵提示） -->
     <div class="start-screen" id="startScreen">
       <h1>🐱 喵喵冒險！兩人專屬旅程</h1>
-      <p>按【空白鍵】或【點擊螢幕】控制貓貓跳躍！<br>吃到 20 個點點即可獲勝，吃到金色大點點解鎖 5 張精選合照！</p>
+      <p>點擊【開啟冒險】開始幫助貓貓跳躍！<br>吃到 20 個點點即可獲勝，吃到金色大點點解鎖 5 張精選合照！</p>
       <button class="btn" onclick="startGame()">開啟冒險 🐾</button>
     </div>
 
@@ -203,16 +207,15 @@
       </div>
     </div>
 
-    <!-- 迪士尼 出發卷 通關彈窗 -->
+    <!-- 加大版 迪士尼 出發卷 通關彈窗 -->
     <div class="modal-overlay" id="victoryModal">
       <div class="card disney-card">
         <h2>✨ 迪士尼 出發卷 ✨</h2>
-        <!-- 迪士尼城堡照片（使用 6.jpeg） -->
-        <div class="photo-container" style="height: 250px; background: transparent; border: none; box-shadow: none;">
+        <div class="photo-container" style="height: 290px; background: transparent; border: none; box-shadow: none;">
           <img class="disney-bg-img" src="6.jpeg" alt="迪士尼城堡">
         </div>
-        <p>🎉 恭喜通關！<br>憑此券可兌換「專屬迪士尼夢幻之旅」乙次！<br>準備好跟我一起去看煙火了嗎？🏰🎆✨</p>
-        <button class="btn disney-btn" onclick="location.reload()" style="margin-top: 15px;">再玩一次 🔄</button>
+        <p style="margin-top: 10px;">🎉 恭喜通關！<br>憑此券可兌換「專屬迪士尼夢幻之旅」乙次！<br>準備好跟我一起去看煙火了嗎？🏰🎆✨</p>
+        <button class="btn disney-btn" onclick="location.reload()" style="margin-top: 20px;">再玩一次 🔄</button>
       </div>
     </div>
   </div>
@@ -315,11 +318,13 @@
     let gameState = 'START';
     let score = 0;
     const targetScore = 20;
-    let gameSpeed = 3.2;
+    
+    // 遊戲移動速度提升（由 3.2 提升至 4.8）
+    let gameSpeed = 4.8;
 
     const cat = {
       x: 100, y: 380, width: 56, height: 50,
-      vy: 0, gravity: 0.55, jumpPower: -13.0,
+      vy: 0, gravity: 0.65, jumpPower: -14.5,
       isGrounded: true
     };
 
@@ -365,10 +370,8 @@
 
     function spawnElements() {
       spawnTimer++;
-      // 拉長生成間隔（由 75 增加至 90）
-      if (spawnTimer > 90) {
+      if (spawnTimer > 65) {
         spawnTimer = 0;
-        // 調降金色大球出現機率（由 0.35 降低至 0.18）
         const isBig = Math.random() < 0.18;
         collectibles.push({
           x: canvas.width,
