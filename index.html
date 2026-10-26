@@ -18,18 +18,20 @@
     .game-container {
       position: relative;
       width: 800px;
+      height: 400px;
       max-width: 95vw;
-      background: #fff;
+      background: #fcf8f2;
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       overflow: hidden;
       border: 4px solid #ffb6c1;
     }
     canvas {
-      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 400px;
-      background: #fcf8f2;
+      height: 100%;
     }
     .ui-layer {
       position: absolute;
@@ -40,9 +42,10 @@
       justify-content: space-between;
       align-items: center;
       pointer-events: none;
+      z-index: 10;
     }
     .score-board {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       padding: 8px 18px;
       border-radius: 20px;
       font-weight: bold;
@@ -80,11 +83,9 @@
     .modal-overlay.active .card {
       transform: scale(1);
     }
-
-    /* 解決 iPhone 照片裁切問題：用 contain + 深色拍立得襯底 */
     .photo-container {
       width: 100%;
-      height: 260px;
+      height: 220px;
       background-color: #1a1a1a;
       border-radius: 12px;
       overflow: hidden;
@@ -98,38 +99,24 @@
     .photo-frame {
       max-width: 100%;
       max-height: 100%;
-      object-fit: contain; /* 完整顯示，不裁切 */
+      object-fit: contain;
     }
-
-    /* 迪士尼煙火卡片樣式 */
     .disney-card {
       background: linear-gradient(180deg, #0d0722 0%, #1f0a38 100%);
       color: #fff;
       border: 2px solid #ffd700;
       box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
-      position: relative;
-      overflow: hidden;
     }
-    .disney-card h2 {
-      color: #ffd700;
-      text-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
-      font-size: 1.6rem;
-      margin-bottom: 10px;
-    }
-    .disney-card p {
-      color: #e0d5f5;
-      line-height: 1.6;
-    }
+    .disney-card h2 { color: #ffd700; font-size: 1.6rem; margin-bottom: 10px; }
+    .disney-card p { color: #e0d5f5; line-height: 1.6; }
     .disney-bg-img {
       width: 100%;
-      height: 230px;
+      height: 200px;
       object-fit: cover;
       border-radius: 12px;
       border: 2px solid #ffd700;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
       margin-bottom: 15px;
     }
-
     .card h2 { color: #ff4757; margin-bottom: 8px; font-size: 1.4rem; }
     .card p { color: #57606f; font-size: 0.95rem; line-height: 1.5; margin-bottom: 18px; }
     .btn {
@@ -142,18 +129,15 @@
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
-      transition: transform 0.1s;
     }
     .disney-btn {
       background: linear-gradient(45deg, #ffd700, #ffaa00);
       color: #1a0b2e;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.6);
     }
-    .btn:active { transform: scale(0.95); }
     .start-screen {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(255, 240, 243, 0.95);
+      background: rgba(255, 240, 243, 0.98);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -164,25 +148,17 @@
     }
     .start-screen h1 { color: #ff4757; margin-bottom: 10px; font-size: 2rem; }
     .start-screen p { color: #747d8c; margin-bottom: 25px; font-size: 1rem; line-height: 1.6; }
-
-    #fireworksCanvas {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 95;
-    }
   </style>
 </head>
 <body>
 
   <div class="game-container">
-    <canvas id="fireworksCanvas"></canvas>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <canvas id="fireworksCanvas" width="800" height="400" style="pointer-events: none; z-index: 95;"></canvas>
 
     <div class="ui-layer">
       <div class="score-board">🔴 點點進度：<span id="score">0</span> / <span id="target">15</span></div>
     </div>
-
-    <canvas id="gameCanvas"></canvas>
 
     <!-- 開始畫面 -->
     <div class="start-screen" id="startScreen">
@@ -191,7 +167,7 @@
       <button class="btn" onclick="startGame()">開啟冒險 🐾</button>
     </div>
 
-    <!-- 照片回憶彈窗 -->
+    <!-- 照片彈窗 -->
     <div class="modal-overlay" id="photoModal">
       <div class="card">
         <div class="photo-container">
@@ -208,7 +184,7 @@
       <div class="card disney-card">
         <h2>✨ 迪士尼 出發卷 ✨</h2>
         <img class="disney-bg-img" src="https://images.unsplash.com/photo-1513151233558-d860c5398176?w=700" alt="迪士尼城堡煙火">
-        <p>🎉 恭喜通關！<br>憑此卷可兌換「專屬迪士尼夢幻之旅」乙次！<br>準備好跟我一起去看煙火了嗎？🏰🎆✨</p>
+        <p>🎉 恭喜通關！<br>憑此券可兌換「專屬迪士尼夢幻之旅」乙次！<br>準備好跟我一起去看煙火了嗎？🏰🎆✨</p>
         <button class="btn disney-btn" onclick="location.reload()" style="margin-top: 12px;">再玩一次 🔄</button>
       </div>
     </div>
@@ -217,52 +193,48 @@
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 800;
-    canvas.height = 400;
-
     const fwCanvas = document.getElementById('fireworksCanvas');
     const fwCtx = fwCanvas.getContext('2d');
-    fwCanvas.width = 800;
-    fwCanvas.height = 400;
 
-    // Web Audio API 音效
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioCtx = null;
     function playSound(type) {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      
-      if (type === 'jump') {
-        osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(450, audioCtx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-      } else if (type === 'collect') {
-        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08);
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-      } else if (type === 'big') {
-        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.25);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-      }
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        if (type === 'jump') {
+          osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(450, audioCtx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        } else if (type === 'collect') {
+          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        } else if (type === 'big') {
+          osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+        }
+      } catch(e) {}
     }
 
-    // 煙火特效系統
     let fireworks = [];
     function launchFirework() {
       const colors = ['#ffd700', '#ff4757', '#2ecc71', '#00d2d3', '#ff9ff3', '#ffffff'];
       const x = Math.random() * fwCanvas.width;
       const y = Math.random() * (fwCanvas.height * 0.5) + 50;
       const color = colors[Math.floor(Math.random() * colors.length)];
-      for (let i = 0; i < 35; i++) {
+      for (let i = 0; i < 30; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = Math.random() * 4 + 1;
         fireworks.push({
@@ -276,13 +248,10 @@
 
     function updateFireworks() {
       fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-      fireworks.forEach((p, idx) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.05; // 重力
-        p.life--;
+      fireworks.forEach((p) => {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life--;
         fwCtx.fillStyle = p.color;
-        fwCtx.globalAlpha = p.life / p.maxLife;
+        fwCtx.globalAlpha = Math.max(0, p.life / p.maxLife);
         fwCtx.fillRect(p.x, p.y, p.size, p.size);
       });
       fwCtx.globalAlpha = 1;
@@ -293,7 +262,6 @@
       }
     }
 
-    // 照片庫（記錄獨立解鎖狀態）
     const photos = [
       { img: '1.jpg', title: '被媽媽發現了!', desc: '等媽媽回來玩抓迷藏', isUnlocked: false },
       { img: '2.jpg', title: '第二站：精彩旅程', desc: '無論去哪裡都有你相伴～🌊', isUnlocked: false },
@@ -306,7 +274,6 @@
     const targetScore = 15;
     let gameSpeed = 2.5;
 
-    // 黑色賓士貓
     const cat = {
       x: 80, y: 280, width: 45, height: 40,
       vy: 0, gravity: 0.45, jumpPower: -10.5,
@@ -372,7 +339,6 @@
       if (!nextPhoto) return;
 
       nextPhoto.isUnlocked = true;
-
       gameState = 'PAUSED';
       document.getElementById('modalImg').src = nextPhoto.img;
       document.getElementById('modalTitle').innerText = nextPhoto.title;
@@ -445,7 +411,7 @@
       ctx.fillStyle = '#56ab2f';
       ctx.fillRect(0, 320, canvas.width, 5);
 
-      // 繪製黑色賓士貓
+      // 黑色賓士貓
       ctx.fillStyle = '#222222';
       ctx.fillRect(cat.x, cat.y, cat.width, cat.height);
 
@@ -489,20 +455,16 @@
       ctx.moveTo(cat.x + 6, cat.y); ctx.lineTo(cat.x + 13, cat.y - 6); ctx.lineTo(cat.x + 16, cat.y);
       ctx.fill();
 
-      // 繪製點點
+      // 點點
       collectibles.forEach(item => {
         ctx.beginPath();
         ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
         if (item.isBig) {
           ctx.fillStyle = '#f1c40f';
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = '#f39c12';
         } else {
           ctx.fillStyle = '#ff4757';
-          ctx.shadowBlur = 0;
         }
         ctx.fill();
-        ctx.shadowBlur = 0;
       });
 
       // 粒子
@@ -519,6 +481,9 @@
         requestAnimationFrame(gameLoop);
       }
     }
+
+    // 初始化畫一次背景
+    draw();
   </script>
 </body>
 </html>
