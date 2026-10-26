@@ -131,8 +131,8 @@
 
     <!-- 開始畫面 -->
     <div class="start-screen" id="startScreen">
-      <h1>🐱 喵喵冒險！兩人專屬旅程</h1>
-      <p>按【空白鍵】或【點擊螢幕】控制小貓咪跳躍！<br>吃到 15 個點點即可獲勝，吃到大點點可解鎖合照照片喔！</p>
+      <h1>🐱 賓士喵冒險！兩人專屬旅程</h1>
+      <p>按【空白鍵】或【點擊螢幕】控制小賓士貓跳躍！<br>吃到 15 個點點即可獲勝，吃到金色大點點解鎖精選合照！</p>
       <button class="btn" onclick="startGame()">開啟冒險 🐾</button>
     </div>
 
@@ -141,7 +141,7 @@
       <div class="card">
         <img id="modalImg" class="photo-frame" src="" alt="我們的合照">
         <h2 id="modalTitle">解鎖甜密回憶！</h2>
-        <p id="modalDesc">這裡放你們的溫馨旅遊回憶說明...</p>
+        <p id="modalDesc">每一個有你陪伴的日子，都是最珍貴的回憶❤️</p>
         <button class="btn" onclick="resumeGame()">繼續冒險 ▶</button>
       </div>
     </div>
@@ -150,8 +150,8 @@
     <div class="modal-overlay" id="victoryModal">
       <div class="card">
         <h2>🎉 恭喜通關！專屬旅遊兌換券</h2>
-        <img class="photo-frame" src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=500" alt="機票驚喜">
-        <p>憑此券可兌換「專屬雙人國外之旅」乙次！<br>準備好和我一起飛往下一個國度了嗎？✈️❤️</p>
+        <img class="photo-frame" src="1.jpg" alt="機票驚喜">
+        <p>憑此券可兌換「專屬雙人出國之旅」乙次！<br>準備好和我一起出發了嗎？✈️❤️</p>
         <button class="btn" onclick="location.reload()">再玩一次 🔄</button>
       </div>
     </div>
@@ -193,18 +193,12 @@
       }
     }
 
-    // 里程碑合照庫（大點點觸發，依序顯示）
-    const photoMilestones = [
-      {
-        title: "第一站：甜密時光",
-        desc: "每一個有你陪伴的日子，都是最珍貴的回憶！❤️",
-        img: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500"
-      },
-      {
-        title: "第二站：看海的季節",
-        desc: "無論想去世界的哪裡，我都想陪你一起去探索！🌊",
-        img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500"
-      }
+    // 里程碑照片陣列（讀取同目錄下的 1.jpg, 2.jpg, 3.jpg, 4.jpg）
+    const photos = [
+      { img: '1.jpg', title: '被媽媽發現了!', desc: '等媽媽回來玩抓迷藏' },
+      { img: '2.jpg', title: '第二站：精彩旅程', desc: '無論去哪裡都有你相伴～🌊' },
+      { img: '3.jpg', title: '第三站：溫馨回憶', desc: '把每個瞬間都珍藏起來！✨' },
+      { img: '4.jpg', title: '第四站：期待出發', desc: '準備好迎接下一次的出國旅行了嗎？✈️' }
     ];
     let photoIndex = 0;
 
@@ -213,6 +207,7 @@
     const targetScore = 15;
     let gameSpeed = 2.5;
 
+    // 黑色賓士貓
     const cat = {
       x: 80, y: 280, width: 45, height: 40,
       vy: 0, gravity: 0.45, jumpPower: -10.5,
@@ -261,10 +256,9 @@
 
     function spawnElements() {
       spawnTimer++;
-      // 定期生成點點
       if (spawnTimer > 70) {
         spawnTimer = 0;
-        const isBig = Math.random() < 0.25; // 25% 機率生成大點點
+        const isBig = Math.random() < 0.28; // 28% 機率出現大金黃點
         collectibles.push({
           x: canvas.width,
           y: isBig ? 210 : (220 + Math.random() * 60),
@@ -275,20 +269,18 @@
     }
 
     function triggerPhotoModal() {
-      if (photoMilestones.length === 0) return;
-      const m = photoMilestones[photoIndex % photoMilestones.length];
+      const p = photos[photoIndex % photos.length];
       photoIndex++;
 
       gameState = 'PAUSED';
-      document.getElementById('modalImg').src = m.img;
-      document.getElementById('modalTitle').innerText = m.title;
-      document.getElementById('modalDesc').innerText = m.desc;
+      document.getElementById('modalImg').src = p.img;
+      document.getElementById('modalTitle').innerText = p.title;
+      document.getElementById('modalDesc').innerText = p.desc;
       document.getElementById('photoModal').classList.add('active');
     }
 
     function checkCollisions() {
       collectibles.forEach((item, index) => {
-        // 貓咪與圓形點點碰撞
         const catCenterX = cat.x + cat.width / 2;
         const catCenterY = cat.y + cat.height / 2;
         const dist = Math.hypot(catCenterX - item.x, catCenterY - item.y);
@@ -324,7 +316,6 @@
     function update() {
       if (gameState !== 'PLAYING') return;
 
-      // 貓咪物理
       cat.vy += cat.gravity;
       cat.y += cat.vy;
       if (cat.y >= 280) {
@@ -333,7 +324,6 @@
         cat.isGrounded = true;
       }
 
-      // 移動點點與粒子
       collectibles.forEach(item => item.x -= gameSpeed);
       particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; });
 
@@ -347,48 +337,80 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 草地與地面
+      // 地面
       ctx.fillStyle = '#a8e6cf';
       ctx.fillRect(0, 325, canvas.width, 75);
       ctx.fillStyle = '#56ab2f';
       ctx.fillRect(0, 320, canvas.width, 5);
 
-      // 像素貓咪繪製
-      ctx.fillStyle = '#ff9f43';
+      // --- 繪製黑色賓士貓 ---
+      // 1. 黑色身體
+      ctx.fillStyle = '#222222';
       ctx.fillRect(cat.x, cat.y, cat.width, cat.height);
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(cat.x + 8, cat.y + 8, 10, 10);
-      ctx.fillRect(cat.x + 26, cat.y + 8, 10, 10);
-      ctx.fillStyle = '#000';
-      ctx.fillRect(cat.x + 12, cat.y + 12, 4, 4);
-      ctx.fillRect(cat.x + 30, cat.y + 12, 4, 4);
 
-      // 貓耳朵
-      ctx.fillStyle = '#ee5253';
+      // 2. 胸口/肚子白毛 (V領白毛)
+      ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.moveTo(cat.x + 5, cat.y); ctx.lineTo(cat.x + 15, cat.y - 10); ctx.lineTo(cat.x + 20, cat.y);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(cat.x + 25, cat.y); ctx.lineTo(cat.x + 30, cat.y - 10); ctx.lineTo(cat.x + 40, cat.y);
+      ctx.moveTo(cat.x + 12, cat.y + 18);
+      ctx.lineTo(cat.x + 33, cat.y + 18);
+      ctx.lineTo(cat.x + 22.5, cat.y + 38);
+      ctx.closePath();
       ctx.fill();
 
-      // 繪製點點 (一般小紅點 vs 大金黃點)
+      // 3. 四隻白襪子腳
+      ctx.fillRect(cat.x + 2, cat.y + 34, 8, 6);
+      ctx.fillRect(cat.x + 12, cat.y + 34, 8, 6);
+      ctx.fillRect(cat.x + 25, cat.y + 34, 8, 6);
+      ctx.fillRect(cat.x + 35, cat.y + 34, 8, 6);
+
+      // 4. 臉部白 mask (賓士八字白毛)
+      ctx.beginPath();
+      ctx.moveTo(cat.x + 22.5, cat.y + 8);
+      ctx.lineTo(cat.x + 12, cat.y + 22);
+      ctx.lineTo(cat.x + 33, cat.y + 22);
+      ctx.closePath();
+      ctx.fill();
+
+      // 5. 貓眼 (綠/金眼)
+      ctx.fillStyle = '#2ecc71';
+      ctx.fillRect(cat.x + 8, cat.y + 8, 8, 8);
+      ctx.fillRect(cat.x + 29, cat.y + 8, 8, 8);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(cat.x + 11, cat.y + 10, 3, 5);
+      ctx.fillRect(cat.x + 32, cat.y + 10, 3, 5);
+
+      // 6. 黑色耳朵
+      ctx.fillStyle = '#222222';
+      ctx.beginPath();
+      ctx.moveTo(cat.x + 3, cat.y); ctx.lineTo(cat.x + 13, cat.y - 10); ctx.lineTo(cat.x + 18, cat.y);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cat.x + 27, cat.y); ctx.lineTo(cat.x + 32, cat.y - 10); ctx.lineTo(cat.x + 42, cat.y);
+      ctx.fill();
+      
+      // 耳內粉紅
+      ctx.fillStyle = '#ff8a80';
+      ctx.beginPath();
+      ctx.moveTo(cat.x + 6, cat.y); ctx.lineTo(cat.x + 13, cat.y - 6); ctx.lineTo(cat.x + 16, cat.y);
+      ctx.fill();
+
+      // --- 繪製點點 (紅點 vs 金黃大點) ---
       collectibles.forEach(item => {
         ctx.beginPath();
         ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
         if (item.isBig) {
-          ctx.fillStyle = '#f1c40f'; // 大點點：金色
+          ctx.fillStyle = '#f1c40f';
           ctx.shadowBlur = 10;
           ctx.shadowColor = '#f39c12';
         } else {
-          ctx.fillStyle = '#ff4757'; // 小點點：粉紅
+          ctx.fillStyle = '#ff4757';
           ctx.shadowBlur = 0;
         }
         ctx.fill();
-        ctx.shadowBlur = 0; // 重置光暈
+        ctx.shadowBlur = 0;
       });
 
-      // 繪製粒子
+      // 粒子
       particles.forEach(p => {
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, p.size, p.size);
