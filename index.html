@@ -43,11 +43,11 @@
     }
     .score-board {
       background: rgba(255, 255, 255, 0.9);
-      padding: 8px 16px;
+      padding: 8px 18px;
       border-radius: 20px;
       font-weight: bold;
       color: #ff6b81;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
     .modal-overlay {
@@ -124,8 +124,7 @@
 
   <div class="game-container">
     <div class="ui-layer">
-      <div class="score-board">🐾 分數：<span id="score">0</span> / <span id="target">520</span></div>
-      <div class="score-board">❤️ 愛心：<span id="hearts">0</span></div>
+      <div class="score-board">🔴 點點進度：<span id="score">0</span> / <span id="target">15</span></div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -133,7 +132,7 @@
     <!-- 開始畫面 -->
     <div class="start-screen" id="startScreen">
       <h1>🐱 喵喵冒險！兩人專屬旅程</h1>
-      <p>按【空白鍵】或【點擊螢幕】控制小貓咪跳躍！<br>收集愛心與合照相框，解鎖旅遊驚喜吧！</p>
+      <p>按【空白鍵】或【點擊螢幕】控制小貓咪跳躍！<br>吃到 15 個點點即可獲勝，吃到大點點可解鎖合照照片喔！</p>
       <button class="btn" onclick="startGame()">開啟冒險 🐾</button>
     </div>
 
@@ -185,43 +184,41 @@
         gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
         gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
         osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+      } else if (type === 'big') {
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.25);
       }
     }
 
-    // 里程碑合照資料
+    // 里程碑合照庫（大點點觸發，依序顯示）
     const photoMilestones = [
       {
-        score: 150,
         title: "第一站：甜密時光",
         desc: "每一個有你陪伴的日子，都是最珍貴的回憶！❤️",
-        img: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500",
-        triggered: false
+        img: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500"
       },
       {
-        score: 350,
         title: "第二站：看海的季節",
         desc: "無論想去世界的哪裡，我都想陪你一起去探索！🌊",
-        img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500",
-        triggered: false
+        img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500"
       }
     ];
+    let photoIndex = 0;
 
     let gameState = 'START';
     let score = 0;
-    let heartsCount = 0;
-    const targetScore = 520;
-
-    // 遊戲運行速度（已調慢）
+    const targetScore = 15;
     let gameSpeed = 2.5;
 
-    // 小貓咪物件（已調校跳躍與重力參數）
     const cat = {
       x: 80, y: 280, width: 45, height: 40,
       vy: 0, gravity: 0.45, jumpPower: -10.5,
       isGrounded: true
     };
 
-    let obstacles = [];
     let collectibles = [];
     let particles = [];
     let spawnTimer = 0;
@@ -264,47 +261,58 @@
 
     function spawnElements() {
       spawnTimer++;
-      // 間隔生成障礙物
-      if (spawnTimer > 160 && Math.random() < 0.4) {
-        obstacles.push({ x: canvas.width, y: 295, width: 25, height: 30 });
+      // 定期生成點點
+      if (spawnTimer > 70) {
         spawnTimer = 0;
+        const isBig = Math.random() < 0.25; // 25% 機率生成大點點
+        collectibles.push({
+          x: canvas.width,
+          y: isBig ? 210 : (220 + Math.random() * 60),
+          radius: isBig ? 16 : 8,
+          isBig: isBig
+        });
       }
-      // 生成愛心
-      if (Math.random() < 0.015) {
-        collectibles.push({ x: canvas.width, y: 190 + Math.random() * 70, width: 22, height: 22 });
-      }
+    }
+
+    function triggerPhotoModal() {
+      if (photoMilestones.length === 0) return;
+      const m = photoMilestones[photoIndex % photoMilestones.length];
+      photoIndex++;
+
+      gameState = 'PAUSED';
+      document.getElementById('modalImg').src = m.img;
+      document.getElementById('modalTitle').innerText = m.title;
+      document.getElementById('modalDesc').innerText = m.desc;
+      document.getElementById('photoModal').classList.add('active');
     }
 
     function checkCollisions() {
-      // 收集愛心
       collectibles.forEach((item, index) => {
-        if (cat.x < item.x + item.width && cat.x + cat.width > item.x &&
-            cat.y < item.y + item.height && cat.y + cat.height > item.y) {
+        // 貓咪與圓形點點碰撞
+        const catCenterX = cat.x + cat.width / 2;
+        const catCenterY = cat.y + cat.height / 2;
+        const dist = Math.hypot(catCenterX - item.x, catCenterY - item.y);
+
+        if (dist < item.radius + 20) {
           collectibles.splice(index, 1);
-          heartsCount++;
-          score += 25;
-          playSound('collect');
-          createParticles(item.x, item.y, '#ff4757', 8);
+          score++;
+          document.getElementById('score').innerText = score;
+
+          if (item.isBig) {
+            playSound('big');
+            createParticles(item.x, item.y, '#f1c40f', 12);
+            triggerPhotoModal();
+          } else {
+            playSound('collect');
+            createParticles(item.x, item.y, '#ff4757', 6);
+          }
+
+          if (score >= targetScore) {
+            gameState = 'PAUSED';
+            document.getElementById('victoryModal').classList.add('active');
+          }
         }
       });
-    }
-
-    function checkMilestones() {
-      photoMilestones.forEach(m => {
-        if (!m.triggered && score >= m.score) {
-          m.triggered = true;
-          gameState = 'PAUSED';
-          document.getElementById('modalImg').src = m.img;
-          document.getElementById('modalTitle').innerText = m.title;
-          document.getElementById('modalDesc').innerText = m.desc;
-          document.getElementById('photoModal').classList.add('active');
-        }
-      });
-
-      if (score >= targetScore) {
-        gameState = 'PAUSED';
-        document.getElementById('victoryModal').classList.add('active');
-      }
     }
 
     function resumeGame() {
@@ -316,11 +324,7 @@
     function update() {
       if (gameState !== 'PLAYING') return;
 
-      score++;
-      document.getElementById('score').innerText = score;
-      document.getElementById('hearts').innerText = heartsCount;
-
-      // 貓咪重力與物理
+      // 貓咪物理
       cat.vy += cat.gravity;
       cat.y += cat.vy;
       if (cat.y >= 280) {
@@ -329,18 +333,15 @@
         cat.isGrounded = true;
       }
 
-      // 移動畫面上元素
-      obstacles.forEach(obs => obs.x -= gameSpeed);
+      // 移動點點與粒子
       collectibles.forEach(item => item.x -= gameSpeed);
       particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; });
 
-      obstacles = obstacles.filter(obs => obs.x > -50);
       collectibles = collectibles.filter(item => item.x > -50);
       particles = particles.filter(p => p.life > 0);
 
       spawnElements();
       checkCollisions();
-      checkMilestones();
     }
 
     function draw() {
@@ -354,7 +355,7 @@
 
       // 像素貓咪繪製
       ctx.fillStyle = '#ff9f43';
-      ctx.fillRect(cat.x, cat.y, cat.width, cat.height); // 身體
+      ctx.fillRect(cat.x, cat.y, cat.width, cat.height);
       ctx.fillStyle = '#fff';
       ctx.fillRect(cat.x + 8, cat.y + 8, 10, 10);
       ctx.fillRect(cat.x + 26, cat.y + 8, 10, 10);
@@ -371,21 +372,23 @@
       ctx.moveTo(cat.x + 25, cat.y); ctx.lineTo(cat.x + 30, cat.y - 10); ctx.lineTo(cat.x + 40, cat.y);
       ctx.fill();
 
-      // 繪製障礙物（灰色小毛球/障礙）
-      ctx.fillStyle = '#8395a7';
-      obstacles.forEach(obs => {
-        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-      });
-
-      // 繪製愛心
-      ctx.fillStyle = '#ff4757';
+      // 繪製點點 (一般小紅點 vs 大金黃點)
       collectibles.forEach(item => {
         ctx.beginPath();
-        ctx.arc(item.x + 10, item.y + 10, 8, 0, Math.PI * 2);
+        ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
+        if (item.isBig) {
+          ctx.fillStyle = '#f1c40f'; // 大點點：金色
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = '#f39c12';
+        } else {
+          ctx.fillStyle = '#ff4757'; // 小點點：粉紅
+          ctx.shadowBlur = 0;
+        }
         ctx.fill();
+        ctx.shadowBlur = 0; // 重置光暈
       });
 
-      // 粒子
+      // 繪製粒子
       particles.forEach(p => {
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, p.size, p.size);
