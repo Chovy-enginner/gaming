@@ -128,9 +128,9 @@
     .disney-card h2 { color: #ffd700; font-size: 2.1rem; margin-bottom: 14px; text-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
     .disney-card p { color: #e0d5f5; line-height: 1.7; font-size: 1.15rem; }
     .disney-bg-img {
-      width: 100%;
-      height: 250px;
-      object-fit: cover;
+      max-width: 100%;
+      max-height: 250px;
+      object-fit: contain;
       border-radius: 16px;
       border: 3px solid #ffd700;
       margin-bottom: 18px;
@@ -207,8 +207,10 @@
     <div class="modal-overlay" id="victoryModal">
       <div class="card disney-card">
         <h2>✨ 迪士尼 出發卷 ✨</h2>
-        <!-- 迪士尼夢幻城堡照片 -->
-        <img class="disney-bg-img" src="https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800" alt="迪士尼城堡">
+        <!-- 迪士尼城堡照片（使用 6.jpeg） -->
+        <div class="photo-container" style="height: 250px; background: transparent; border: none; box-shadow: none;">
+          <img class="disney-bg-img" src="6.jpeg" alt="迪士尼城堡">
+        </div>
         <p>🎉 恭喜通關！<br>憑此券可兌換「專屬迪士尼夢幻之旅」乙次！<br>準備好跟我一起去看煙火了嗎？🏰🎆✨</p>
         <button class="btn disney-btn" onclick="location.reload()" style="margin-top: 15px;">再玩一次 🔄</button>
       </div>
@@ -307,7 +309,7 @@
       { img: '2.jpg', title: '包胖胖出遊', desc: '聽~海哭的聲音', isUnlocked: false },
       { img: '3.jpg', title: '一隅毛毛的探險', desc: '凹嗚~凹嗚~廁所在哪?', isUnlocked: false },
       { img: '4.jpg', title: '期待見面', desc: '右邊超可愛，左邊也有穿衣服', isUnlocked: false },
-      { img: '5.jpg', title: '第五站：夢幻起飛', desc: '牽著你的手，一起邁向最夢幻的旅遊冒險！✨✈️', isUnlocked: false }
+      { img: '5.jpg', title: '阿糰辛酸打工畫面流出', desc: '麥當勞歡樂送喔', isUnlocked: false }
     ];
 
     let gameState = 'START';
@@ -363,9 +365,11 @@
 
     function spawnElements() {
       spawnTimer++;
-      if (spawnTimer > 75) {
+      // 拉長生成間隔（由 75 增加至 90）
+      if (spawnTimer > 90) {
         spawnTimer = 0;
-        const isBig = Math.random() < 0.35;
+        // 調降金色大球出現機率（由 0.35 降低至 0.18）
+        const isBig = Math.random() < 0.18;
         collectibles.push({
           x: canvas.width,
           y: isBig ? 280 : (290 + Math.random() * 80),
