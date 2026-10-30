@@ -375,7 +375,7 @@
       if (spawnTimer > 65) {
         spawnTimer = 0;
         // 金色大球出現機率精準設定為 25% (0.25)
-        const isBig = Math.random() < 0.25;
+        const isBig = Math.random() < 0.3;
         collectibles.push({
           x: canvas.width,
           y: isBig ? 280 : (290 + Math.random() * 80),
